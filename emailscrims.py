@@ -26,7 +26,7 @@ class Server:
         self.server.quit()
 
 class PlainTextMessage(EmailMessage):
-    def __init__(self, team, teams):
+    def __init__(self, team):
         EmailMessage.__init__(self)
         self["Subject"]="Scrim Oppurtunities"
         self["To"]=team.get("Your Email")
@@ -39,16 +39,12 @@ Your Team:
 
         self.addTeam(team, team.freelist)
         self.content=self.content+"\nPotential Scrim Partners:\n"
-
-        no_teams=True
-        for each in teams:
-            if each is not team:
-                times=team.findCompatibleTimes(each)
-                if times!=[]:
-                    no_teams=False
-                    self.addTeam(each,times)
-                    
-        if no_teams is True:
+   
+        compatible_teams=team.getCompatibleTeams()
+        if compatible_teams!=[]:
+            for pair in compatible_teams:
+                self.addTeam(pair[0],pair[1])
+        else:        
             self.noTeam()
         self.set_content(self.content)     
 
@@ -87,6 +83,7 @@ class HTMLMessage(MIMEMultipart):
         self['To'] = self.team.get("Your Email")
 
     def initText(self):
+        
         self.text="test"
 
     def initHTML(self):
