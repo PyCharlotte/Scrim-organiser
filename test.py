@@ -65,7 +65,7 @@ part2 = MIMEText(html, 'html')
 # the HTML message, is best and preferred.
 msg.attach(part1)
 msg.attach(part2)
-
+print(msg)
 import emailscrims
 server=emailscrims.Server()
 server.login()

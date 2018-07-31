@@ -112,5 +112,19 @@ def main():
         #eserver.send(msg)
     eserver.logoff()
 
+def main2():
+    teams=getTeams()
+    findCompatibilities(teams)
+    msgs=[]
+    for team in teams:
+        msgs.append(emailscrims.HTMLMessage(team))
+
+    eserver=emailscrims.Server()
+    eserver.login()
+    for msg in msgs:
+        print(msg)
+        eserver.send(msg)
+    eserver.logoff()
+
 if __name__=="__main__":
-    main()
+    main2()
