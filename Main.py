@@ -93,5 +93,5 @@ def main():
     eserver.login()
     for msg in msgs:
         print(msg)
-        #eserver.send(msg)
+        eserver.send(msg)
     eserver.logoff()
