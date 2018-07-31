@@ -4,7 +4,8 @@ import csv
 class Team:
     def __init__(self, attributes, freelist):
         self.freelist=freelist
-        self.attributes=attributes   
+        self.attributes=attributes
+        self.compatible_teams=[]
 
     def findCompatibleTimes(self, other):
         compatible_times=[]
@@ -12,10 +13,14 @@ class Team:
             for timeslot2 in other.freelist:
                 if timeslot1.isSame(timeslot2):
                     compatible_times.append(timeslot1)
-        return compatible_times
+        if compatible_times != []:
+            self.compatible_teams.append([other, compatible_times])
 
     def get(self, attribute):
         return self.attributes[attribute]
+
+    def getCompatibleTeams(self):
+        return self.compatible_teams
 
 class Timeslot:
     def __init__(self, day, time):
@@ -83,11 +88,36 @@ def getTeams():
             teams.append(processRow(row, times, attribute_names))
     return teams
 
+def findCompatibilities(teams):
+    """
+    For each team, determines which other teams have the same
+    timeslots free
+    """
+    for team in teams:
+        for other_team in teams:
+            if team is not other_team:
+                team.findCompatibleTimes(other_team)
+
 def main():    
     teams=getTeams()
+    findCompatibilities(teams)
     msgs=[]
     for team in teams:
-        msgs.append(emailscrims.PlainTextMessage(team, teams))
+        msgs.append(emailscrims.PlainTextMessage(team))
+
+    eserver=emailscrims.Server()
+    eserver.login()
+    for msg in msgs:
+        print(msg)
+        #eserver.send(msg)
+    eserver.logoff()
+
+def main2():
+    teams=getTeams()
+    findCompatibilities(teams)
+    msgs=[]
+    for team in teams:
+        msgs.append(emailscrims.HTMLMessage(team))
 
     eserver=emailscrims.Server()
     eserver.login()
@@ -95,3 +125,6 @@ def main():
         print(msg)
         eserver.send(msg)
     eserver.logoff()
+
+if __name__=="__main__":
+    main2()
