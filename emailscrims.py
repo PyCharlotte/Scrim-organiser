@@ -25,7 +25,7 @@ class PlainTextMessage(EmailMessage):
     def __init__(self, team, teams):
         EmailMessage.__init__(self)
         self["Subject"]="Scrim Oppurtunities"
-        self["To"]=team.email
+        self["To"]=team.get("Your Email")
         self.content="""
 Hello there!
 Please see your potential scrim partners for this week below.
@@ -43,7 +43,6 @@ Your Team:
                     self.noTeam()
                 else:
                     self.addTeam(each,times)
-                    self.addTeam(each,times)
         print(self.content)
         self.set_content(self.content)     
 
@@ -59,17 +58,14 @@ Your Team:
 Wins: %s
 Avaliable at:
 """
-        
-##        -Day Time
-        timeslot_template="-%s %s \n"
 
-        self.content=self.content+str(details_template % (team.getName(),team.getName(), team.getWins()))
+        self.content=self.content+str(details_template % (team.get("Team Name"),team.get("University"), team.get("Wins in NUEL")))
         for timeslot in timeslots:
-            self.content=self.content+str(timeslot_template % (timeslot.day, timeslot.time))
+            self.content=self.content+str(timeslot)+"\n"
         
 ##      Contact captain at email
-        contact_template="Contact %s at %s \n"
-        self.content=self.content+str(contact_template % (team.getCaptain(), team.getEmail()))
+        contact_template="Contact %s at %s or use IGN: %s \n"
+        self.content=self.content+str(contact_template % (team.get("Your Name"), team.get("Your Email"), team.get("Your IGN")))
 
 class HTMLMessage(MIMEMultipart):
     def __init__(self, team):
@@ -82,7 +78,7 @@ class HTMLMessage(MIMEMultipart):
 
     def initHeaders(self):
         self['Subject'] = "Potential Scrims"
-        self['To'] = self.team.getEmail()
+        self['To'] = self.team.get("Your Email")
 
     def initText(self):
         self.text="test"
