@@ -26,18 +26,50 @@ class PlainTextMessage(EmailMessage):
         EmailMessage.__init__(self)
         self["Subject"]="Scrim Oppurtunities"
         self["To"]=team.email
-        content=""
+        self.content="""
+Hello there!
+Please see your potential scrim partners for this week below.
+
+Your Team:
+"""
+
+        self.addTeam(team, team.freelist)
+        self.content=self.content+"\nPotential Scrim Partners:\n"
 
         for each in teams:
             if each is not team:
                 times=team.findCompatibleTimes(each)
-                if times!=[]:
-                    content=content+"\n"+str(each)
-                    for each2 in times:
-                        content=content+str(each2)+"\n"
-        print(content)
-        self.set_content(content)     
+                if times==[]:
+                    self.noTeam()
+                else:
+                    self.addTeam(each,times)
+                    self.addTeam(each,times)
+        print(self.content)
+        self.set_content(self.content)     
+
+    def noTeam(self):
+        self.content=self.content+"There were no teams that could scrim with you this week ;(."
+
+    def addTeam(self, team, timeslots):        
+##        Name, University
+##        Wins: number
+##        Avaliable at:        
+        details_template="""
+%s, %s
+Wins: %s
+Avaliable at:
+"""
         
+##        -Day Time
+        timeslot_template="-%s %s \n"
+
+        self.content=self.content+str(details_template % (team.getName(),team.getName(), team.getWins()))
+        for timeslot in timeslots:
+            self.content=self.content+str(timeslot_template % (timeslot.day, timeslot.time))
+        
+##      Contact captain at email
+        contact_template="Contact %s at %s \n"
+        self.content=self.content+str(contact_template % (team.getCaptain(), team.getEmail()))
 
 class HTMLMessage(MIMEMultipart):
     def __init__(self, team):
