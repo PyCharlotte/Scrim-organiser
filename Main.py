@@ -2,28 +2,9 @@ import emailscrims
 import csv
 
 class Team:
-    def __init__(self, name, wins, captain, email, freelist):
-        self.name=name
-        self.wins=wins
-        self.captain=captain
-        self.email=email
+    def __init__(self, attributes, freelist):
         self.freelist=freelist
-
-    def __str__(self):
-        return self.name+"\n"+self.wins+"\n"+self.captain+"\n"+self.email+"\n"
-        #return string
-
-    def getName(self):
-        return self.name
-
-    def getWins(self):
-        return self.wins
-
-    def getCaptain(self):
-        return self.captain
-
-    def getEmail(self):
-        return self.email
+        self.attributes=attributes   
 
     def findCompatibleTimes(self, other):
         compatible_times=[]
@@ -32,6 +13,9 @@ class Team:
                 if timeslot1.isSame(timeslot2):
                     compatible_times.append(timeslot1)
         return compatible_times
+
+    def get(self, attribute):
+        return self.attributes[attribute]
 
 class Timeslot:
     def __init__(self, day, time):
@@ -45,41 +29,69 @@ class Timeslot:
         if self.time==other.time and self.day==other.day:
             return True
 
-def getTimes(row):    
-    times=[]
-    for each in row[5:]:
-        x=each.split("[")[1]
+def processFirstRow(row):
+    """
+    Processes the first row of the csv file.
+    This find out what attributes are being given and how many
+    possible times of the day there are.
+    """
+    
+    for index in range(len(row)):
+        if "When are you free?" in row[index]:
+            split_point=index-1
+            attribute_names=row[:split_point]
+    
+    times=[]    
+    for header in row[split_point:]:
+        x=header.split("[")[1]
         y=x.split("]")[0]
-        times.append(y)
-    return times
+        times.append(y)    
+    return times, attribute_names
 
-def processRow(row, times):
-    name=row[1]
-    wins=row[2]
-    captain=row[3]
-    email=row[4]
+def processRow(row, times, attribute_names):
+    """
+    Processes subsequent rows of the csv file.
+    Encapsulates the team's attributes (details) and the times (timeslots)
+    they are free in a Team object.
+    """
+    
+    attributes={}
+    for index in range(len(attribute_names)):
+        attributes[attribute_names[index]]=row[index]
 
     freelist=[]
-    for each in range(len(row[5:])):
-        days=row[5:][each].split(";")
+    split_point=len(attribute_names)    
+    for time_index in range(len(row[split_point:])):
+        days=row[split_point:][time_index].split(";")
         for day in days:
-            freelist.append(Timeslot(day, times[each]))
+            if day !="":
+                freelist.append(Timeslot(day, times[time_index]))
 
-    team=Team(name, wins, captain, email, freelist)
+    team=Team(attributes, freelist)
     return team  
 
-def getTeams():    
+def getTeams():
+    """
+    Processes all rows to generate a list of team objects.
+    """
+    
     teams=[]
     with open("scrims.csv") as csvfile:
         reader=csv.reader(csvfile)
-        times=getTimes(reader.__next__())
+        times, attribute_names=processFirstRow(reader.__next__())
         for row in reader:
-            teams.append(processRow(row, times))
+            teams.append(processRow(row, times, attribute_names))
     return teams
-   
-teams=getTeams()
-msg=emailscrims.PlainTextMessage(teams[0], teams)
-eserver=emailscrims.Server()
-eserver.login()
-eserver.send(msg)
-eserver.logoff()
+
+def main():    
+    teams=getTeams()
+    msgs=[]
+    for team in teams:
+        msgs.append(emailscrims.PlainTextMessage(team, teams))
+
+    eserver=emailscrims.Server()
+    eserver.login()
+    for msg in msgs:
+        print(msg)
+        eserver.send(msg)
+    eserver.logoff()
