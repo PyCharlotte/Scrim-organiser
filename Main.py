@@ -4,12 +4,7 @@ import csv
 class Team:
     def __init__(self, attributes, freelist):
         self.freelist=freelist
-
-        self.attributes=attributes
-        #self.attributes["name"]=name
-        #self.attributes["wins"]=wins
-        #self.attributes["captain"]=captain
-        #self.attributes["email"]=email    
+        self.attributes=attributes   
 
     def findCompatibleTimes(self, other):
         compatible_times=[]
@@ -35,39 +30,51 @@ class Timeslot:
             return True
 
 def processFirstRow(row):
+    """
+    Processes the first row of the csv file.
+    This find out what attributes are being given and how many
+    possible times of the day there are.
+    """
+    
     for index in range(len(row)):
         if "When are you free?" in row[index]:
             split_point=index-1
             attribute_names=row[:split_point]
     
-    times=[]
-    #print(split_point)
-    #print(row[split_point:])
+    times=[]    
     for header in row[split_point:]:
         x=header.split("[")[1]
         y=x.split("]")[0]
-        times.append(y)
-    #print(times)
+        times.append(y)    
     return times, attribute_names
 
 def processRow(row, times, attribute_names):
+    """
+    Processes subsequent rows of the csv file.
+    Encapsulates the team's attributes (details) and the times (timeslots)
+    they are free in a Team object.
+    """
+    
     attributes={}
     for index in range(len(attribute_names)):
         attributes[attribute_names[index]]=row[index]
 
     freelist=[]
-    split_point=len(attribute_names)
-    #print(split_point)
-    for each in range(len(row[split_point:])):
-        days=row[split_point:][each].split(";")
+    split_point=len(attribute_names)    
+    for time_index in range(len(row[split_point:])):
+        days=row[split_point:][time_index].split(";")
         for day in days:
             if day !="":
-                freelist.append(Timeslot(day, times[each]))
+                freelist.append(Timeslot(day, times[time_index]))
 
     team=Team(attributes, freelist)
     return team  
 
-def getTeams():    
+def getTeams():
+    """
+    Processes all rows to generate a list of team objects.
+    """
+    
     teams=[]
     with open("scrims.csv") as csvfile:
         reader=csv.reader(csvfile)
@@ -75,10 +82,16 @@ def getTeams():
         for row in reader:
             teams.append(processRow(row, times, attribute_names))
     return teams
-   
-teams=getTeams()
-msg=emailscrims.PlainTextMessage(teams[0], teams)
-eserver=emailscrims.Server()
-eserver.login()
-#eserver.send(msg)
-eserver.logoff()
+
+def main():    
+    teams=getTeams()
+    msgs=[]
+    for team in teams:
+        msgs.append(emailscrims.PlainTextMessage(team, teams))
+
+    eserver=emailscrims.Server()
+    eserver.login()
+    for msg in msgs:
+        print(msg)
+        #eserver.send(msg)
+    eserver.logoff()

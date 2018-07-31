@@ -19,7 +19,7 @@ class Server:
         self.server.send_message(msg)
 
     def logoff(self):
-        self.server.quit()#
+        self.server.quit()
 
 class PlainTextMessage(EmailMessage):
     def __init__(self, team, teams):
@@ -36,14 +36,16 @@ Your Team:
         self.addTeam(team, team.freelist)
         self.content=self.content+"\nPotential Scrim Partners:\n"
 
+        no_teams=True
         for each in teams:
             if each is not team:
                 times=team.findCompatibleTimes(each)
-                if times==[]:
-                    self.noTeam()
-                else:
+                if times!=[]:
+                    no_teams=False
                     self.addTeam(each,times)
-        print(self.content)
+                    
+        if no_teams is True:
+            self.noTeam()
         self.set_content(self.content)     
 
     def noTeam(self):
