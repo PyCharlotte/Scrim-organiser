@@ -6,13 +6,17 @@ from email.message import EmailMessage
 class Server:
     def __init__(self):
         self.address="unilolscrims@gmail.com"
-        self.password="iclesports"
+        self.password=input("Email password: ")
 
     def login(self):
         self.server = smtplib.SMTP('smtp.gmail.com', 587)
         self.server.ehlo()
         self.server.starttls()
-        self.server.login(self.address, self.password)
+        try:
+            self.server.login(self.address, self.password)
+        except smtplib.SMTPAuthenticationError:
+            print("Probably an incorrect password")
+            raise Exception("Login fail")
 
     def send(self, msg):
         msg["From"]="unilolscrims@gmail.com"
