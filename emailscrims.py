@@ -1,6 +1,7 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.message import EmailMessage
 
 class Server:
     def __init__(self):
@@ -18,9 +19,27 @@ class Server:
         self.server.send_message(msg)
 
     def logoff(self):
-        self.server.quit()
+        self.server.quit()#
 
-class Message(MIMEMultipart):
+class PlainTextMessage(EmailMessage):
+    def __init__(self, team, teams):
+        EmailMessage.__init__(self)
+        self["Subject"]="Scrim Oppurtunities"
+        self["To"]=team.email
+        content=""
+
+        for each in teams:
+            if each is not team:
+                times=team.findCompatibleTimes(each)
+                if times!=[]:
+                    content=content+"\n"+str(each)
+                    for each2 in times:
+                        content=content+str(each2)+"\n"
+        print(content)
+        self.set_content(content)     
+        
+
+class HTMLMessage(MIMEMultipart):
     def __init__(self, team):
         MIMEMultipart.__init__(self)
         self.team=team
